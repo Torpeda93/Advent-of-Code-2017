@@ -53,36 +53,7 @@ int calculatePos(int rightRowPos)
     return valPos;
 }
 
-void leftDirFill(int *x, int *y, int *dir)
-{
-    int tmp_x = (*x) + 1;
-    int tmp_y = *y;
-    long int spiralVal = 0;
-
-    while (0 != spiralTable[tmp_x][tmp_y])
-    {
-        tmp_y -= 1;
-        spiralVal = spiralTable[tmp_x][tmp_y] + spiralTable[tmp_x + 1][tmp_y] + spiralTable[tmp_x + 1][tmp_y + 1] + spiralTable[tmp_x + 1][tmp_y + 1];
-        spiralTable[tmp_x][tmp_y] = spiralVal;
-    }
-    tmp_y += 1;
-
-    *x = tmp_x;
-    *y = tmp_y;
-    *dir = DOWN_DIR;
-}
-
-void rightDirFill(int *x, int *y, int *dir)
-{
-
-}
-
-void upDirFill(int *x, int *y, int *dir)
-{
-
-}
-
-void downDirFill(int *x, int *y, int *dir)
+int leftDirFill(int *x, int *y, int *dir)
 {
     int tmp_x = *x;
     int tmp_y = *y;
@@ -90,14 +61,104 @@ void downDirFill(int *x, int *y, int *dir)
 
     while (0 != spiralTable[tmp_x][tmp_y])
     {
-        tmp_y++;
-        spiralVal = spiralTable[tmp_x + 1][tmp_y] + spiralTable[tmp_x + 1][tmp_y - 1] + spiralTable[tmp_x][tmp_y - 1] + spiralTable[tmp_x + 1][tmp_y + 1];
-        spiralTable[tmp_x][tmp_y] = spiralVal;
+        spiralVal = spiralTable[tmp_x][tmp_y] + spiralTable[tmp_x][tmp_y + 1] + spiralTable[tmp_x][tmp_y - 1] + spiralTable[tmp_x - 1][tmp_y + 1];
+        if (spiralVal > INPUT_SIZE)
+        {
+            spiralTable[tmp_x - 1][tmp_y] = spiralVal;
+            *x = tmp_x - 1;
+            *y = tmp_y;
+            return 1;
+        }
+        spiralTable[tmp_x - 1][tmp_y] = spiralVal;
+        tmp_y--;
     }
 
-    *x = tmp_x;
-    *y = tmp_y;
+    *x = tmp_x - 1;
+    *y = tmp_y + 1;
+    *dir = DOWN_DIR;
+
+    return 0;
+}
+
+int rightDirFill(int *x, int *y, int *dir)
+{
+    int tmp_x = *x;
+    int tmp_y = *y;
+    long int spiralVal = 0;
+
+    while (0 != spiralTable[tmp_x][tmp_y])
+    {
+        spiralVal = spiralTable[tmp_x][tmp_y] + spiralTable[tmp_x][tmp_y - 1] + spiralTable[tmp_x][tmp_y + 1] + spiralTable[tmp_x + 1][tmp_y - 1];
+        if (spiralVal > INPUT_SIZE)
+        {
+            spiralTable[tmp_x + 1][tmp_y] = spiralVal;
+            *x = tmp_x + 1;
+            *y = tmp_y;
+            return 1;
+        }
+        spiralTable[tmp_x + 1][tmp_y] = spiralVal;
+        tmp_y++;
+    }
+
+    *x = tmp_x + 1;
+    *y = tmp_y - 1;
+    *dir = UP_DIR;
+
+    return 0;
+}
+
+int upDirFill(int *x, int *y, int *dir)
+{
+    int tmp_x = *x;
+    int tmp_y = *y;
+    long int spiralVal = 0;
+
+    while (0 != spiralTable[tmp_x][tmp_y])
+    {
+        spiralVal = spiralTable[tmp_x][tmp_y] + spiralTable[tmp_x - 1][tmp_y] + spiralTable[tmp_x + 1][tmp_y] + spiralTable[tmp_x + 1][tmp_y + 1];
+        if (spiralVal > INPUT_SIZE)
+        {
+            spiralTable[tmp_x][tmp_y + 1] = spiralVal;
+            *x = tmp_x;
+            *y = tmp_y + 1;
+            return 1;
+        }
+        spiralTable[tmp_x][tmp_y + 1] = spiralVal;
+        tmp_x--;
+    }
+
+    *x = tmp_x + 1;
+    *y = tmp_y + 1;
+    *dir = LEFT_DIR;
+
+    return 0;
+}
+
+int downDirFill(int *x, int *y, int *dir)
+{
+    int tmp_x = *x;
+    int tmp_y = *y;
+    long int spiralVal = 0;
+
+    while (0 != spiralTable[tmp_x][tmp_y])
+    {
+        spiralVal = spiralTable[tmp_x][tmp_y] + spiralTable[tmp_x + 1][tmp_y] + spiralTable[tmp_x - 1][tmp_y] + spiralTable[tmp_x - 1][tmp_y - 1];
+        if (spiralVal > INPUT_SIZE)
+        {
+            spiralTable[tmp_x][tmp_y - 1] = spiralVal;
+            *x = tmp_x;
+            *y = tmp_y - 1;
+            return 1;
+        }
+        spiralTable[tmp_x][tmp_y - 1] = spiralVal;
+        tmp_x++;
+    }
+
+    *x = tmp_x - 1;
+    *y = tmp_y - 1;
     *dir = RIGHT_DIR;
+
+    return 0;
 }
 
 int fillSpiral()
@@ -106,6 +167,7 @@ int fillSpiral()
     int dir = 0;
     int x = 0;
     int y = 0;
+    int retVal = 0;
 
     spiralTable[10][9] = 1;
     spiralTable[10][10] = 1;
@@ -113,28 +175,30 @@ int fillSpiral()
     spiralTable[9][9] = 4;
     x = 9;
     y = 9;
-    dir = LEFT_DIR;
+    dir = DOWN_DIR;
 
-    while (spiralTable[x][y] < INPUT_SIZE)
+    while (1 != retVal)
     {
         switch (dir)
         {
         case LEFT_DIR:
-            leftDirFill(&x, &y, &dir);
+            retVal = leftDirFill(&x, &y, &dir);
             break;
         case RIGHT_DIR:
-            rightDirFill(&x, &y, &dir);
+            retVal = rightDirFill(&x, &y, &dir);
             break;
         case UP_DIR:
-            upDirFill(&x, &y, &dir);
+            retVal = upDirFill(&x, &y, &dir);
             break;
         case DOWN_DIR:
-            downDirFill(&x, &y, &dir);
+            retVal = downDirFill(&x, &y, &dir);
             break;
         default:
             break;
         }
     }
+
+    cout << "Value is: " << spiralTable[x][y];
 
     return 0;
 }
